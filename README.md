@@ -20,7 +20,3 @@ CREATE TABLE IF NOT EXISTS public.superheros
     "updatedAt" timestamp with time zone NOT NULL,
     CONSTRAINT superheros_pkey PRIMARY KEY (id)
 );
-
-## Assumptions: 
-
-From the text of the test task, I've assumed that there should only be one table in the database
