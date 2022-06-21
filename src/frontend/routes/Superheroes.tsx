@@ -63,6 +63,11 @@ const Superheroes: FC = () => {
         setAddSuperheroActive(false)
     }
 
+    const handleHeaderClick = () => {
+        setAddSuperheroActive(false)
+        navigate('/')
+    }
+
     return (
         <Grid
             container
@@ -75,7 +80,7 @@ const Superheroes: FC = () => {
             direction="column"
             alignItems="center"
         >
-            <AppHeader />
+            <AppHeader onClick={handleHeaderClick}/>
             <Box
                 display="flex"
                 flexDirection="column"

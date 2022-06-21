@@ -45,6 +45,11 @@ const SuperheroDetails: FC = () => {
         dispatch(deleteSuperheroData(id))
     }
 
+    const handleHeaderClick = () => {
+        setEditSuperheroActive(false)
+        navigate('/')
+    }
+
 return (
     <Grid
         container
@@ -56,7 +61,7 @@ return (
         direction="column"
         alignItems="center"
     >
-        <AppHeader />
+        <AppHeader onClick={handleHeaderClick}/>
         <Box sx={{ mt: 9 }}>
             {fetchingSuperhero ?
                 <CircularProgress />

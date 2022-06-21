@@ -1,14 +1,18 @@
-import React from 'react';
+import React, { FC } from 'react';
 import { AppBar, Toolbar, Typography, Button } from '@material-ui/core';
 import { useNavigate } from 'react-router-dom';
 
-function AppHeader() {
+interface AppHeaderInputProps{
+    onClick: () => void
+}
+
+const AppHeader: FC<AppHeaderInputProps> = ({onClick}) => {
     const navigate = useNavigate();
     return (
         <AppBar position="fixed" >
             <Toolbar>
                 <Button
-                    onClick={() => navigate('/')}
+                    onClick={onClick}
                     style={{ textTransform: 'none' }}
                     color="inherit">
                     <Typography

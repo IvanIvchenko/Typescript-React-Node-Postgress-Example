@@ -1,14 +1,16 @@
-const db = require("../models/index.js")
-const getImages = require('../utils/getImages.util.js')
-const getMainImage = require('../utils/getMainImage.util.js')
-const imageNamesToLinks = require('../utils/imageNamesToLinks.util.js')
-const fs = require('fs');
-const isInteger = require("../utils/isInteger.util.js");
+import { Request } from 'express'
+import db from "../models/index"
+import { ResponseError, SuperheroFull, SuperheroShort, RequestBody } from '../utils/interfaces'
+import getImages from '../utils/getImages.util'
+import getMainImage from '../utils/getMainImage.util'
+import imageNamesToLinks from '../utils/imageNamesToLinks.util'
+import fs from 'fs'
+import isInteger from "../utils/isInteger.util"
 const Superhero = db.superhero;
 
-async function create(data) {
-  const mainImage = getMainImage(data.files)
-  const images = getImages(data.files)
+export async function create(data: Request<{}, {}, RequestBody>) {
+  const mainImage = getMainImage((data as any).files)
+  const images = getImages((data as any).files)
 
   let newSuperhero = await Superhero.create({
     nickname: data.body.nickname,
@@ -24,21 +26,21 @@ async function create(data) {
     newSuperhero.images = imageNamesToLinks(newSuperhero.images)
     newSuperhero.mainImage = imageNamesToLinks(newSuperhero.mainImage)
     const { updatedAt, createdAt, ...formattedNewSuperhero } = newSuperhero
-    return formattedNewSuperhero
+    return formattedNewSuperhero.dataValues
   } else {
-    const err = new Error('Error occured while creating a superhero');
+    const err: ResponseError = new Error('Error occured while creating a superhero');
     err.statusCode = 500;
     throw err;
   }
 }
 
-async function getRowNumber() {
+export async function getRowNumber() {
   const rowNumber = await Superhero.count()
   return rowNumber
 }
 
-async function findAll(page) {
-  let superheroes = await Superhero.findAll({
+export async function findAll(page: number) {
+  let superheroes: SuperheroShort[] = await Superhero.findAll({
     offset: (page - 1) * 5,
     limit: 5,
     attributes: ['id', 'nickname', 'mainImage'],
@@ -48,16 +50,16 @@ async function findAll(page) {
   if (superheroes) {
     return superheroes.map(superhero => ({ ...superhero, mainImage: imageNamesToLinks(superhero.mainImage) }))
   } else {
-    const err = new Error('Error occured while retreaving superheroes');
+    const err: ResponseError = new Error('Error occured while retreaving superheroes');
     err.statusCode = 500;
     throw err;
   }
 }
 
-async function findOne(id) {
+export async function findOne(id: string) {
 
   if (!isInteger(id)) {
-    const err = new Error(`Invalid superhero id`);
+    const err: ResponseError = new Error(`Invalid superhero id`);
     err.statusCode = 400;
     throw err;
   }
@@ -69,19 +71,19 @@ async function findOne(id) {
     const { updatedAt, createdAt, ...formattedSuperhero } = superhero
     return formattedSuperhero
   } else {
-    const err = new Error(`No superhero with id=${id} was found`);
+    const err: ResponseError = new Error(`No superhero with id=${id} was found`);
     err.statusCode = 400;
     throw err;
   }
 }
 
-async function deleteOne(id) {
+export async function deleteOne(id: number) {
 
   const folder = __dirname + "/../../static/images/"
-  const superhero = await Superhero.findByPk(id)
+  const superhero: SuperheroFull = await Superhero.findByPk(id)
 
   if (!superhero) {
-    const err = new Error(`No superhero with id=${id} was found`);
+    const err: ResponseError = new Error(`No superhero with id=${id} was found`);
     err.statusCode = 400;
     throw err;
   }
@@ -89,20 +91,21 @@ async function deleteOne(id) {
     where: { id: id }
   })
   if (superheroDestr !== 1) {
-    const err = new Error(`"Error deleting superhero with id=${id}`);
+    const err: ResponseError = new Error(`"Error deleting superhero with id=${id}`);
     err.statusCode = 409;
     throw err;
   }
-  superhero.images.map(image => fs.unlink(folder + image, (err) => {
+  superhero.images.map(image => fs.unlink(folder + image, (err: ResponseError | null) => {
     if (err) {
-      const err = new Error(`"Error deleting image for superhero with id=${id}`);
+      const err: ResponseError = new Error(`"Error deleting image for superhero with id=${id}`);
       err.statusCode = 500;
       throw err;
     }
   }))
-  fs.unlink(folder + superhero.mainImage, (err) => {
+
+  fs.unlink(folder + superhero.mainImage, (err: ResponseError | null) => {
     if (err) {
-      const err = new Error(`"Error deleting main image for superhero with id=${id}`);
+      const err: ResponseError = new Error(`"Error deleting main image for superhero with id=${id}`);
       err.statusCode = 500;
       throw err;
     }
@@ -110,7 +113,7 @@ async function deleteOne(id) {
   return;
 }
 
-async function deleteAll() {
+export async function deleteAll() {
   const folder = __dirname + "/../../static/images/"
 
   const superheroDestr = await Superhero.destroy({
@@ -119,22 +122,22 @@ async function deleteAll() {
   })
 
   if (!superheroDestr) {
-    const err = new Error(`Error deleting superheroes`);
+    const err: ResponseError = new Error(`Error deleting superheroes`);
     err.statusCode = 409;
     throw err;
   }
 
-  fs.readdir(folder, (err, files) => {
+  fs.readdir(folder, (err: ResponseError | null, files: string[]) => {
     if (err) {
-      const err = new Error(`Error finding superhero images`);
+      const err: ResponseError = new Error(`Error finding superhero images`);
       err.statusCode = 500;
       throw err;
     }
 
     for (const file of files) {
-      fs.unlinkSync(folder + file, (err) => {
+      fs.unlink(folder + file, (err: ResponseError | null) => {
         if (err) {
-          const err = new Error(`Error deleting a superhero image `);
+          const err: ResponseError = new Error(`Error deleting a superhero image `);
           err.statusCode = 500;
           throw err;
         }
@@ -144,27 +147,27 @@ async function deleteAll() {
   return;
 }
 
-async function update(id, data) {
+export async function update(id: number, data: Request<{}, {}, RequestBody>) {
   
   if(!data.body.nickname){
-    const err = new Error('Superhero nickname is required and was not provided');
+    const err: ResponseError = new Error('Superhero nickname is required and was not provided');
     err.statusCode = 500;
     throw err;
   }
 
-  const mainImage = getMainImage(data.files)
-  const images = getImages(data.files)
+  const mainImage = getMainImage((data as any).files)
+  const images = getImages((data as any).files)
 
   let superhero = await Superhero.findOne({ where: { id: id } })
 
   const updatedSuperhero = await superhero.update({
-    nickname: data.body.nickname || superhero.nickname,
+    nickname: data.body.nickname,
     real_name: data.body.real_name || superhero.real_name,
     origin_description: data.body.origin_description || superhero.origin_description,
     superpowers: data.body.superpowers || superhero.superpowers,
     catch_phrase: data.body.catch_phrase || superhero.catch_phrase,
-    mainImage: mainImage || superhero.mainImage,
-    images: images
+    mainImage: mainImage,
+    images: images || superhero.images
   })
 
   if (updatedSuperhero) {
@@ -173,18 +176,8 @@ async function update(id, data) {
     const { updatedAt, createdAt, ...formattedUpdatedSuperhero } = updatedSuperhero
     return formattedUpdatedSuperhero
   } else {
-    const err = new Error('Error occured while updating a superhero');
+    const err: ResponseError = new Error('Error occured while updating a superhero');
     err.statusCode = 500;
     throw err;
   }
-}
-
-module.exports = {
-  create,
-  getRowNumber,
-  update,
-  findAll,
-  findOne,
-  deleteOne,
-  deleteAll,
 }

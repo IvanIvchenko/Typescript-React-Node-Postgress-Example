@@ -1,7 +1,9 @@
-const db = require("../models/index.js")
+import db from "../models/index"
 const Superhero = db.superhero;
 
-module.exports = async (nickname) => {
+const superheroExistsCheck = async (nickname: string) => {
     const superhero = await Superhero.findAll({where:{nickname:nickname}})
     return !!superhero.length
 }
+
+export default superheroExistsCheck

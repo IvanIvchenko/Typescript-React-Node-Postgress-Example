@@ -72,7 +72,7 @@ export const editSuperheroData = createAsyncThunk<
             headers: {
                 'Accept': 'application/json',
             },
-            body: JSON.stringify(getFormDataFromObject(data)),
+            body: getFormDataFromObject(data),
             method: 'PUT'
 
         })

@@ -4,7 +4,8 @@
     "description": "",
     "main": "app.js",
     "scripts": {
-        "babel": "babel-node app.js",
+        "build": "npx tsc",
+        "babel": "ts-node app.ts",
         "start": "nodemon --exec npm run babel"
     },
     "author": "",
@@ -25,9 +26,15 @@
         "@babel/core": "^7.16.5",
         "@babel/node": "^7.16.5",
         "@babel/preset-env": "^7.16.5",
+        "@types/cors": "^2.8.12",
+        "@types/express": "^4.17.13",
+        "@types/multer": "^1.4.7",
+        "@types/node": "^18.0.0",
         "cors": "^2.8.5",
         "express": "^4.17.2",
         "jest": "^24.8.0",
-        "nodemon": "^2.0.15"
+        "nodemon": "^2.0.15",
+        "ts-node": "^10.8.1",
+        "typescript": "^4.7.4"
     }
 }

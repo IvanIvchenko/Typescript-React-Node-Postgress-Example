@@ -1,10 +1,11 @@
-const dbConfig = require("../config/db.config.js");
-const Sequelize = require("sequelize");
+import dbConfig from "../config/db.config"
+import {Sequelize} from "sequelize";
+import Superhero from './superhero.model'
 
 const sequelize = new Sequelize(dbConfig.DB, dbConfig.USER, dbConfig.PASSWORD, {
     host: dbConfig.HOST,
-    dialect: dbConfig.dialect,
-    operatorsAliases: false,
+    dialect: dbConfig.dialect as any,
+    operatorsAliases: false as any,
     pool: {
         max: dbConfig.pool.max,
         min: dbConfig.pool.min,
@@ -13,8 +14,9 @@ const sequelize = new Sequelize(dbConfig.DB, dbConfig.USER, dbConfig.PASSWORD, {
     }
 });
 
-const db = {};
+const db: any = {};
 db.Sequelize = Sequelize;
 db.sequelize = sequelize;
-db.superhero = require("./superhero.model.js")(sequelize, Sequelize);
-module.exports = db;
+db.superhero = Superhero(sequelize, Sequelize)
+
+export default db
